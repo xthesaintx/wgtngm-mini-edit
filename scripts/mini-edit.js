@@ -393,10 +393,6 @@ export async function openBulkEditForSelection() {
     return;
   }
 
-  if (!foundry.utils.isSubclass(sheetClass, foundry.applications.api.ApplicationV2)) {
-    ui.notifications.error(game.i18n.format("MINIEDIT.errors.nonV2Sheet", { documentName: selectedType }));
-    return;
-  }
 
   const BulkSheetClass = createBulkSheetClass(selectedType, sheetClass);
 

@@ -1,6 +1,6 @@
 # Mini Edit
-- Foundry VTT module for Bulk editing controlled placeables
-- Checkbox selection for targeted Bulk updates
+- Foundry VTT module for bulk editing controlled placeables
+- Checkbox selection for targeted bulk updates
 - GM-only editing
 
 ## Supported Documents

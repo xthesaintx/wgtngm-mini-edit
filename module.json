@@ -1,7 +1,7 @@
 {
   "id": "wgtngm-mini-edit",
   "title": "Mini Edit",
-  "description": "Minimal Bulk edit for selected placeables.",
+  "description": "Mini bulk config editor for selected placeables.",
   "version": "0.1.0",
   "authors": [
     {
@@ -16,7 +16,7 @@
   "url": "https://wgtngm.com",
   "manifest": "",
   "download": "",
-  "readme": "https://campaigncodex.wgtngm.com",
+  "readme": "https://campaigncodex.wgtngm.com/mini-edit/",
   "esmodules": [
     "scripts/main.js"
   ],

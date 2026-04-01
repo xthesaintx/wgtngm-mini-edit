@@ -22,8 +22,7 @@
       "gmOnly": "Mini Edit is GM-only.",
       "canvasNotReady": "Canvas is not ready.",
       "updateFailed": "Failed to update selected {documentName} documents.",
-      "noSheetClass": "No AppV2 sheet class found for {documentName}.",
-      "nonV2Sheet": "The active sheet for {documentName} is not AppV2-compatible."
+      "noSheetClass": "No sheet class found for {documentName}."
     }
   }
 }
