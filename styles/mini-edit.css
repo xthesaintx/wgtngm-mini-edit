@@ -1,0 +1,33 @@
+.mini-edit-sheet .form-group {
+  position: relative;
+  padding-right: 2.1rem;
+  transition: background-color 120ms ease;
+}
+
+.mini-edit-sheet .form-group .mini-edit-checkbox {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.35rem;
+  width: 1.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mini-edit-sheet .form-group .mini-edit-control {
+  margin: 0;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.mini-edit-sheet .form-group.mini-edit-selected {
+  background: rgba(63, 142, 216, 0.18);
+}
+
+.mini-edit-sheet .form-group .mini-edit-checkbox.me-diff .mini-edit-control {
+  outline: 1px solid #c0882a;
+}
+
+.mini-edit-sheet .form-group .mini-edit-checkbox.me-flag .mini-edit-control {
+  outline: 1px solid #9a5cc3;
+}
