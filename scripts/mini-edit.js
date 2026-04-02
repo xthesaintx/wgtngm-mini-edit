@@ -110,16 +110,30 @@ function createBulkSheetClass(documentName, baseClass) {
 
   class MiniBulkSheet extends baseClass {
     static get DEFAULT_OPTIONS() {
-      return foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
-        classes: [...(super.DEFAULT_OPTIONS?.classes ?? []), "mini-edit-sheet"],
-        form: {
-          submitOnChange: false,
-          closeOnSubmit: false,
-          handler(event, form, formData) {
-            return this._onBulkSubmit(event, form, formData);
+      const parentOptions = super.DEFAULT_OPTIONS ?? {};
+      const parentClasses = parentOptions.classes ?? [];
+      const parentSubmitHandler = parentOptions.form?.handler;
+
+      return foundry.utils.mergeObject(
+        parentOptions,
+        {
+          classes: Array.from(new Set([...parentClasses, "mini-edit-sheet"])),
+          form: {
+            submitOnChange: false,
+            closeOnSubmit: false,
+            handler(event, form, formData) {
+              if (this._onBulkSubmit instanceof Function) {
+                return this._onBulkSubmit(event, form, formData);
+              }
+              if (parentSubmitHandler instanceof Function) {
+                return parentSubmitHandler.call(this, event, form, formData);
+              }
+              return undefined;
+            },
           },
         },
-      });
+        { inplace: false }
+      );
     }
 
     constructor(options = {}) {
@@ -129,7 +143,7 @@ function createBulkSheetClass(documentName, baseClass) {
       this._meDocumentName = options.meDocumentName ?? documentName;
       this._meCommonData = computeCommonFlatData(this._meDocuments);
       this._meSelectedFieldNames = new Set();
-      this._meGroupFieldNames = new WeakMap();
+      this._meMutationObserver = null;
       this._instanceKey = options.meDocumentName ?? documentName;
     }
 
@@ -155,6 +169,8 @@ function createBulkSheetClass(documentName, baseClass) {
     }
 
     _onClose(options) {
+      this._meMutationObserver?.disconnect();
+      this._meMutationObserver = null;
       super._onClose?.(options);
       if (OPEN_APPS.get(this._instanceKey) === this) OPEN_APPS.delete(this._instanceKey);
     }
@@ -162,6 +178,7 @@ function createBulkSheetClass(documentName, baseClass) {
     async _onRender(context, options) {
       await super._onRender?.(context, options);
       this._injectBulkEditControls();
+      this._observeLateFormChanges();
     }
 
     _captureSelectedFieldNamesFromForm() {
@@ -178,18 +195,47 @@ function createBulkSheetClass(documentName, baseClass) {
     }
 
     _getGroupFieldNames(group) {
-      const cached = this._meGroupFieldNames.get(group);
-      if (cached) return cached;
-
-      const fieldNames = Array.from(
+      return Array.from(
         new Set(
           Array.from(group.querySelectorAll("[name]"))
             .map((field) => field.name)
             .filter(Boolean)
         )
       );
-      this._meGroupFieldNames.set(group, fieldNames);
-      return fieldNames;
+    }
+
+    _observeLateFormChanges() {
+      const form = this.form;
+      if (!form) return;
+
+      this._meMutationObserver?.disconnect();
+      this._meMutationObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type === "attributes") {
+            const target = mutation.target;
+            if (target instanceof HTMLElement && target.closest(".form-group")) {
+              this._injectBulkEditControls();
+              return;
+            }
+            continue;
+          }
+
+          for (const node of mutation.addedNodes) {
+            if (!(node instanceof HTMLElement)) continue;
+            if (node.matches(".form-group") || node.querySelector(".form-group,[name]")) {
+              this._injectBulkEditControls();
+              return;
+            }
+          }
+        }
+      });
+
+      this._meMutationObserver.observe(form, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["name"],
+      });
     }
 
     _injectBulkEditControls() {
@@ -305,7 +351,12 @@ function createBulkSheetClass(documentName, baseClass) {
         return;
       }
 
-      const flattenedSubmitData = foundry.utils.flattenObject(submitData);
+      const preparedFlatSubmitData = foundry.utils.flattenObject(submitData);
+      let rawFlatSubmitData = {};
+      if (formData?.object && typeof formData.object === "object") {
+        rawFlatSubmitData = foundry.utils.flattenObject(foundry.utils.expandObject(formData.object));
+      }
+      const flattenedSubmitData = { ...rawFlatSubmitData, ...preparedFlatSubmitData };
       const selectedFields = this._collectSelectedFields(flattenedSubmitData);
       if (foundry.utils.isEmpty(selectedFields)) {
         ui.notifications.info(game.i18n.localize("MINIEDIT.notifications.noChanges"));
@@ -352,6 +403,11 @@ function createBulkSheetClass(documentName, baseClass) {
           types: this._meDocumentName,
         })
       );
+      await this.close();
+    }
+
+    async _onMassSubmit(event, form, formData) {
+      return this._onBulkSubmit(event, form, formData);
     }
   }
 
