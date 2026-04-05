@@ -450,6 +450,7 @@ export async function openBulkEditForSelection() {
   }
 
 
+
   const BulkSheetClass = createBulkSheetClass(selectedType, sheetClass);
 
   const existing = OPEN_APPS.get(selectedType);
