@@ -1,3 +1,6 @@
+# NOTE
+This is no longer being hosted on GitHub and there is now a centralised issue tracking repo [here](https://github.com/xthesaintx/wgtngm/issues)
+
 # Mini Edit
 - Foundry VTT module for bulk editing controlled placeables
 - Checkbox selection for targeted bulk updates
